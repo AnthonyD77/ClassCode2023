@@ -1,0 +1,38 @@
+各文件及内部函数作用概述
+
+graph_hash_of_mixed_weighted_HB_shortest_path.h
+    只有graph_hash_of_mixed_weighted_HB_shortest_distance一个函数, 用于查询单源节点到其它节点的最短路径以及对应的跳数限, 用于检查HBPLL生成索引的正确性
+    基于BFS实现, 大作业过程中不需要改动本处代码
+
+graph_hash_of_mixed_weighted_HB_v1.h
+    HBPLL的实现文件, 大作业的补全实现集中于此
+
+    struct HBPLL_v1_node: HBDIJ遍历过程中使用的数据结构, 保存每个节点的相关信息
+    
+    graph_hash_of_mixed_weighted_HL_HB_v1_thread_function_HBDIJ: 需要补全的HBDIJ函数
+
+    graph_hash_of_mixed_weighted_HB_v1_sort_labels_thread 和 graph_hash_of_mixed_weighted_HB_v1_sort_labels：
+    在生成索引之后, 根据节点大小并行地对索引进行排序
+
+    graph_hash_of_mixed_weighted_HB_v1: HBPLL实现函数
+
+graph_hash_of_mixed_weighted_two_hop_labels_v1.h
+    class two_hop_label_v1: 索引结构
+
+    graph_hash_of_mixed_weighted_two_hop_case_info_v1: 存储HBPLL相关参数和用时用量信息,主要用于传参
+    同时存储生成的索引,因此想要查看生成的索引只需要调用print_L函数即可
+
+    graph_hash_of_mixed_weighted_two_hop_v1_extract_distance_no_reduc:
+    需要实现的距离查询函数
+
+    graph_hash_of_mixed_weighted_two_hop_v1_extract_shortest_path_st_no_reduc:
+    需要实现的路径查询函数
+
+test_HBPLL.h
+    测试函数, 整个算法的调用入口在此
+
+    graph_hash_of_mixed_weighted_HB_v1_check_correctness:
+    检查正确性函数, 起点和终点均随机生成
+
+    test_HBPLL: 测试函数, 以及调用入口. 根据参数随机生成图,执行HBPLL算法并执行正确性检查
+    其中含有多个控制参数便于debug测试,请详细读代码
