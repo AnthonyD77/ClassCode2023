@@ -1,5 +1,5 @@
 #pragma once
-#include <Hop/graph_v_of_v_idealID_two_hop_labels_v1.h>
+#include <Hop/HBPLL_two_hop_labels.h>
 
 /**
  * new canonical repair
@@ -148,7 +148,7 @@ void canonical_repair_element_v2(int u, vector<two_hop_label_v2> &L2_u, int valu
     }
 }
 
-void canonical_repair_multi_threads_v2(graph_v_of_v_idealID_two_hop_case_info_v1 &case_info, int num_of_threads) {
+void canonical_repair_multi_threads_v2(two_hop_case_info &case_info, int num_of_threads) {
 
     int N = case_info.L2.size();
     int value_M = case_info.value_M;
@@ -228,7 +228,7 @@ void canonical_repair_element2_v3(int v, vector<two_hop_label_v2> &L2_u) {
     }
 }
 
-void canonical_repair_multi_threads_v3(graph_v_of_v_idealID_two_hop_case_info_v1 &case_info, int num_of_threads) {
+void canonical_repair_multi_threads_v3(two_hop_case_info &case_info, int num_of_threads) {
 
     int N = case_info.L2.size();
     int value_M = case_info.value_M;
