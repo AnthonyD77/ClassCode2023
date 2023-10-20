@@ -35,7 +35,6 @@ vector<vector<two_hop_label_v2>> L2_temp_599;
 vector<vector<vector<pair<double, int>>>> Temp_L_vk_599;
 vector<vector<pair<double, int>>> dist_hop_599;
 queue<int> Qid_599;
-long long int canonical_removed_labels;
 
 void clear_global_values() {
     vector<vector<two_hop_label_v1>>().swap(L_temp_599);
@@ -50,28 +49,24 @@ class two_hop_case_info {
 public:
     /*hop bounded*/
     int upper_k = 0;
-    int value_M = 0;
     bool use_rank_pruning = true;
-    bool use_canonical_repair = true;
-    bool print_label_before_canonical_fix = true;
 
     /*running time records*/
     double time_initialization = 0;
     double time_generate_labels = 0;
-    double time_canonical_repair = 0;
+    double time_sort_labels = 0;
 
     double time_query = 0;
 
+
     /*labels*/
-    vector<vector<two_hop_label_v2>> L2;
+    vector<vector<two_hop_label_v1>> L;
 
     long long int compute_label_size() {
         long long int size = 0;
-        for (auto it = L2.begin(); it != L2.end(); it++) {
+        for (auto it = L.begin(); it != L.end(); it++) {
             for(auto it2 = it->begin(); it2 != it->end(); it2++) {
-                for(auto it3 = it2->dist_info.begin(); it3 != it2->dist_info.end(); it3++) {
-                    size++;
-                }
+                size++;
             }
         }
         return size;
@@ -79,32 +74,25 @@ public:
 
     /*clear labels*/
     void clear_labels() {
-        vector<vector<two_hop_label_v2>>().swap(L2);
+        vector<vector<two_hop_label_v1>>().swap(L);
     }
 
     /*printing*/
     void print_L() {
         cout << "print_L:" << endl;
-        for (int i = 0; i < L2.size(); i++) {
+        for (int i = 0; i < L.size(); i++) {
             cout << "L[" << i << "]=";
-            for (auto it = L2[i].begin(); it != L2[i].end(); it++) {
-                cout << "{" << it->vertex << ",";
-                for (auto j = it->dist_info.begin(); j != it->dist_info.end(); j++) {
-                    cout << "(" << get<0>(*j) << "," << get<1>(*j) << "," << get<2>(*j) << ")";
-                }
-                cout << "} ";
+            for (int j = 0; j < L[i].size(); j++) {
+                cout << "{" << L[i][j].vertex << "," << L[i][j].distance << "," << L[i][j].parent_vertex << ","
+                     << L[i][j].hop << "}";
             }
             cout << endl;
         }
     }
 
     void print_L_vk(int v_k) {
-        for (auto it = L2[v_k].begin(); it != L2[v_k].end(); it++) {
-            cout << "<" << it->vertex << ",";
-            for (auto j = it->dist_info.begin(); j != it->dist_info.end(); j++) {
-                cout << "(" << get<0>(*j) << "," << get<1>(*j) << "," << get<2>(*j) << ")";
-            }
-            cout << ">";
+        for (auto it = L[v_k].begin(); it != L[v_k].end(); it++) {
+            cout << "<" << it->vertex << "," << it->distance << "," << it->parent_vertex << "," << it->hop << ">";
         }
         cout << endl;
     }

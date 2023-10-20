@@ -1,0 +1,20 @@
+SECTION Comments
+Name "simple_iterative_tests_HBPLL.txt"
+Creator "graph_v_of_v_idealID_save_for_GSTP"
+END
+
+input_graph_size |V|= 5 |E|= 7
+
+input_graph Edge 0 1 1.0000000000
+input_graph Edge 0 2 0.4000000000
+input_graph Edge 0 3 1.0000000000
+input_graph Edge 0 4 0.8000000000
+
+input_graph Edge 1 2 0.4000000000
+input_graph Edge 1 4 0.1000000000
+
+input_graph Edge 2 3 0.7000000000
+
+
+
+

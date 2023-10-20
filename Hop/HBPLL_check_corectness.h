@@ -82,7 +82,9 @@ void HB_check_correctness(two_hop_case_info &case_info, graph_v_of_v_idealID &in
 
             double dis;
             auto begin = std::chrono::high_resolution_clock::now();
-            dis = HB_extract_distance(case_info.L2, source, terminal, hop_cst);
+
+            dis = HB_extract_distance_v1(case_info.L, source, terminal, hop_cst);
+
             auto end = std::chrono::high_resolution_clock::now();
             case_info.time_query += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
 
@@ -101,7 +103,7 @@ void HB_check_correctness(two_hop_case_info &case_info, graph_v_of_v_idealID &in
             }
 
             vector <pair<int, int>> path;
-            path = HB_extract_path(case_info.L2, source, terminal, hop_cst);
+            path = HB_extract_path_v1(case_info.L, source, terminal, hop_cst);
 
             double path_dis = 0;
             if (path.size() == 0) {

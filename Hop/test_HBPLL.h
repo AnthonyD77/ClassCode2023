@@ -23,7 +23,7 @@ rm A
 
 */
 
-#include <Hop/HBPLL.h>
+#include <Hop/HBPLL_v1.h>
 #include <Hop/HBPLL_check_corectness.h>
 #include <graph_v_of_v_idealID/random_graph/graph_v_of_v_idealID_generate_random_connected_graph.h>
 #include <graph_v_of_v_idealID/read_save/graph_v_of_v_idealID_read.h>
@@ -36,7 +36,7 @@ void test_HBPLL() {
     int thread_num = 5;                                     //HBPLL执行时的线程数
     int V = 5;                                             //生成新图的节点数
     int E = 7;                                             //生成新图的边数
-    bool generate_new_graph = true;                         //是否生成新图,如果不生成则会读取之前生成的图,用于debug测试
+    bool generate_new_graph = false;                         //是否生成新图,如果不生成则会读取之前生成的图,用于debug测试
     double ec_min = 0.1;                                    //生成新图的最小边权重
     double ec_max = 1;                                      //生成新图的最大边权重
 
@@ -45,7 +45,7 @@ void test_HBPLL() {
     int iteration_source_times = 10;                        //检查正确性时起点随机生成的次数
     int iteration_terminal_times = 10;                      //检查正确性时终点随机生成的次数
     bool print_time_details = true;                         //是否打印HBPLL算法每个步骤的用时
-    bool print_L = false;                                   //是否打印最终生成的索引
+    bool print_L = true;                                   //是否打印最终生成的索引
 
     /* hop bounded info */
     two_hop_case_info mm;
@@ -54,12 +54,12 @@ void test_HBPLL() {
     double avg_index_time = 0;
     double avg_index_size_per_v = 0;
     double avg_query_time = 0;
-    double avg_canonical_repair_remove_label_ratio = 0;
     double total_time_initialization = 0;
     double total_time_generate_labels = 0;
-    double total_time_canonical_repair = 0;
+    double total_time_sort_labels = 0;
 
     /* iteration */
+    iteration_graph_times = generate_new_graph ? iteration_graph_times : 1;
     for (int i = 0; i < iteration_graph_times; i++) {
         cout << ">>>iteration_graph_times: " << i << endl;
 
@@ -74,11 +74,11 @@ void test_HBPLL() {
 
         auto begin = std::chrono::high_resolution_clock::now();
         try {
-            HBPLL(instance_graph, V, thread_num, mm);
+            HBPLL_v1(instance_graph, thread_num, mm);
             if (true) {
                 total_time_initialization += mm.time_initialization;
                 total_time_generate_labels += mm.time_generate_labels;
-                total_time_canonical_repair += mm.time_canonical_repair;
+                total_time_sort_labels += mm.time_sort_labels;
             }
         } catch (string s) {
             cout << s << endl;
@@ -101,18 +101,16 @@ void test_HBPLL() {
 
         avg_query_time += mm.time_query;
         avg_index_size_per_v += (double)mm.compute_label_size() / V / iteration_graph_times;
-        avg_canonical_repair_remove_label_ratio += (double) ((double)canonical_removed_labels / (double)mm.compute_label_size()) / iteration_graph_times;
         mm.clear_labels();
     }
 
     cout << "avg_index_time: " << avg_index_time << "s" << endl;
     cout << "avg_index_size_per_v: " << avg_index_size_per_v << endl;
-    cout << "avg_canonical_repair_remove_label_ratio: " << avg_canonical_repair_remove_label_ratio << endl;
     if (check_correctness)
         cout << "avg_query_time: " << avg_query_time / (iteration_graph_times) << endl;
     if (print_time_details) {
         cout << "total_time_initialization: " << total_time_initialization << endl;
         cout << "total_time_generate_labels: " << total_time_generate_labels << endl;
-        cout << "total_time_canonical_repair: " << total_time_canonical_repair << endl;
+        cout << "total_time_sort_labels: " << total_time_sort_labels << endl;
     }
 }

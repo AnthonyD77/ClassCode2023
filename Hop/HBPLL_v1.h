@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/heap/fibonacci_heap.hpp>
-#include "HBPLL_canonical_repair.h"
+#include <Hop/HBPLL_two_hop_labels.h>
 
 using namespace std;
 
@@ -136,12 +136,6 @@ void HB_thread_function_HBDIJ_Qhandle(int v_k, int N, int upper_k, bool use_rank
                             2. greater distance but smaller hop, add new info, do not update
                         */
                     else {
-//                        if (v_k == 0 && adj_v == 5 && u == 14) {
-//                            cout << node.priority_value << endl;
-//                            cout << node.hop << endl;
-//                            cout << dist_hop_599[used_id][adj_v].first << endl;
-//                            cout << dist_hop_599[used_id][adj_v].second << endl;
-//                        }
                         if (node.priority_value < dist_hop_599[used_id][adj_v].first) {
                             if (Q_handle.find({adj_v, node.hop}) != Q_handle.end()) {
                                 if (Q_handle[{adj_v, node.hop}].second > node.priority_value) {
@@ -190,71 +184,44 @@ void HB_thread_function_HBDIJ_Qhandle(int v_k, int N, int upper_k, bool use_rank
     mtx_599[max_N_599 - 1].unlock();
 }
 
-void HB_transfer_thread(vector <vector<two_hop_label_v2>> *output_L, int v_k, int value_M) {
+void graph_v_of_v_idealID_HB_v1_sort_labels_thread(vector<vector<two_hop_label_v1>> *output_L, int v_k, double value_M) {
     sort(L_temp_599[v_k].begin(), L_temp_599[v_k].end(), compare_two_hop_label_small_to_large);
-
-    int size_vk = L_temp_599[v_k].size();
-    if (size_vk == 0)
-        return;
-
     if (value_M != 0) {
+        int size_vk = L_temp_599[v_k].size();
         for (int i = 0; i < size_vk; i++) {
             L_temp_599[v_k][i].distance += L_temp_599[v_k][i].hop * value_M;
         }
     }
-
-    vector <tuple<double, int, int>> dist_info;
-    dist_info.push_back({L_temp_599[v_k][0].distance, L_temp_599[v_k][0].parent_vertex, L_temp_599[v_k][0].hop});
-
-    vector <two_hop_label_v2> L2_vk;
-    for (int i = 1; i < size_vk; i++) {
-        if (L_temp_599[v_k][i].vertex == L_temp_599[v_k][i - 1].vertex) {
-            dist_info.push_back({L_temp_599[v_k][i].distance, L_temp_599[v_k][i].parent_vertex, L_temp_599[v_k][i].hop});
-        } else {
-            two_hop_label_v2 xx;
-            xx.dist_info.swap(dist_info);
-            xx.vertex = L_temp_599[v_k][i - 1].vertex;
-            L2_vk.push_back(xx);
-            vector < tuple < double, int, int >> ().swap(dist_info);
-            dist_info.push_back({L_temp_599[v_k][i].distance, L_temp_599[v_k][i].parent_vertex, L_temp_599[v_k][i].hop});
-        }
-    }
-    two_hop_label_v2 xx;
-    xx.dist_info.swap(dist_info);
-    xx.vertex = L_temp_599[v_k][size_vk - 1].vertex;
-    L2_vk.push_back(xx);
-
-    (*output_L)[v_k] = L2_vk;
-    vector<two_hop_label_v1>().swap(L_temp_599[v_k]);
+    (*output_L)[v_k] = L_temp_599[v_k];
+    vector<two_hop_label_v1>().swap(L_temp_599[v_k]);  // clear new labels for RAM efficiency
 }
 
-vector <vector<two_hop_label_v2>> HB_transfer_labels(int N, int max_N_ID, int num_of_threads, int value_M = 0) {
-    vector <vector<two_hop_label_v2>> output_L(max_N_ID);
-    vector <vector<two_hop_label_v2>> *p = &output_L;
-
+vector<vector<two_hop_label_v1>> HB_v1_sort_labels(int N, int max_N_ID, int num_of_threads, double value_M = 0) {
+    vector<vector<two_hop_label_v1>> output_L(max_N_ID);
+    vector<vector<two_hop_label_v1>> *p = &output_L;
     ThreadPool pool(num_of_threads);
-    std::vector <std::future<int>> results;
+    std::vector<std::future<int>> results;
     for (int v_k = 0; v_k < N; v_k++) {
         results.emplace_back(pool.enqueue([p, v_k, value_M] {
-            HB_transfer_thread(p, v_k, value_M);
+            graph_v_of_v_idealID_HB_v1_sort_labels_thread(p, v_k, value_M);
             return 1;
         }));
     }
-    for (auto &&result: results)
+    for (auto &&result : results)
         result.get();
 
     return output_L;
 }
 
-void HBPLL(graph_v_of_v_idealID &input_graph, int max_N_ID, int num_of_threads, two_hop_case_info &case_info) {
+void HBPLL_v1(graph_v_of_v_idealID &input_graph, int num_of_threads, two_hop_case_info &case_info) {
     //----------------------------------- step 1: initialization -----------------------------------
     cout << "step 1: initialization" << endl;
 
     auto begin = std::chrono::high_resolution_clock::now();
     /* information prepare */
     begin_time_599 = std::chrono::high_resolution_clock::now();
-    L_temp_599.resize(max_N_ID);
     int N = input_graph.size();
+    L_temp_599.resize(N);
 
     /* thread info */
     ThreadPool pool(num_of_threads);
@@ -304,34 +271,16 @@ void HBPLL(graph_v_of_v_idealID &input_graph, int max_N_ID, int num_of_threads, 
     end = std::chrono::high_resolution_clock::now();
     case_info.time_generate_labels = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
 
-    if (case_info.print_label_before_canonical_fix) {
-        cout << "label_before_canonical_fix:" << endl;
-        for (int i = 0; i < L_temp_599.size(); i++) {
-            cout << "L[" << i << "]:\t";
-            int ii = i;
-            for (int j = 0; j < L_temp_599[ii].size(); j++) {
-                cout << "{" << L_temp_599[ii][j].vertex << "," << L_temp_599[ii][j].distance << ","
-                     << L_temp_599[ii][j].parent_vertex << "," << L_temp_599[ii][j].hop << "}";
-            }
-            cout << endl;
-        }
-    }
 
-    //----------------------------------------------- step 3: canonical_repair---------------------------------------------------------------
-    cout << "step 3: canonical_repair" << endl;
+    //----------------------------------------------- step 3: sort labels---------------------------------------------------------------
+    cout << "step 3: sort labels" << endl;
 
-    L2_temp_599 = HB_transfer_labels(N, max_N_ID, num_of_threads, case_info.value_M);
-    case_info.L2 = L2_temp_599;
+    begin = std::chrono::high_resolution_clock::now();
 
-    if (case_info.use_canonical_repair) {
-        canonical_removed_labels = 0;
+    case_info.L = HB_v1_sort_labels(N, N, num_of_threads);
 
-        begin = std::chrono::high_resolution_clock::now();
-        canonical_repair_multi_threads_v3(case_info, num_of_threads);
-        end = std::chrono::high_resolution_clock::now();
-
-        case_info.time_canonical_repair = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
-    }
+    end = std::chrono::high_resolution_clock::now();
+    case_info.time_sort_labels = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
 
     clear_global_values();
 }
