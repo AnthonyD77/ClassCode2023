@@ -15,13 +15,6 @@ public:
     double distance;
 };
 
-class two_hop_label_v2 {
-public:
-    int vertex;
-    /* tuple: distance, parent_vertex, hop */
-    vector<tuple<double, int, int>> dist_info;
-};
-
 /*
     global values
     unique code for this file: 599
@@ -31,14 +24,12 @@ vector<std::shared_timed_mutex> mtx_599(max_N_599);
 auto begin_time_599 = std::chrono::high_resolution_clock::now();
 graph_v_of_v_idealID ideal_graph_599;
 vector<vector<two_hop_label_v1>> L_temp_599;
-vector<vector<two_hop_label_v2>> L2_temp_599;
 vector<vector<vector<pair<double, int>>>> Temp_L_vk_599;
 vector<vector<pair<double, int>>> dist_hop_599;
 queue<int> Qid_599;
 
 void clear_global_values() {
     vector<vector<two_hop_label_v1>>().swap(L_temp_599);
-    vector<vector<two_hop_label_v2>>().swap(L2_temp_599);
     vector<vector<vector<pair<double, int>>>>().swap(Temp_L_vk_599);
     vector<vector<pair<double, int>>>().swap(dist_hop_599);
     ideal_graph_599.clear();

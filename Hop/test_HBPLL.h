@@ -23,7 +23,7 @@ rm A
 
 */
 
-#include <Hop/HBPLL_v1.h>
+#include <Hop/HBPLL_v1_to_do.h>
 #include <Hop/HBPLL_check_corectness.h>
 #include <graph_v_of_v_idealID/random_graph/graph_v_of_v_idealID_generate_random_connected_graph.h>
 #include <graph_v_of_v_idealID/read_save/graph_v_of_v_idealID_read.h>
@@ -36,7 +36,7 @@ void test_HBPLL() {
     int thread_num = 5;                                     //HBPLL执行时的线程数
     int V = 5;                                             //生成新图的节点数
     int E = 7;                                             //生成新图的边数
-    bool generate_new_graph = false;                         //是否生成新图,如果不生成则会读取之前生成的图,用于debug测试
+    bool generate_new_graph = true;                         //是否生成新图,如果不生成则会读取之前生成的图,用于debug测试
     double ec_min = 0.1;                                    //生成新图的最小边权重
     double ec_max = 1;                                      //生成新图的最大边权重
 
@@ -64,7 +64,7 @@ void test_HBPLL() {
         cout << ">>>iteration_graph_times: " << i << endl;
 
         graph_v_of_v_idealID instance_graph;
-        if (generate_new_graph == 1) {
+        if (generate_new_graph) {
             instance_graph = graph_v_of_v_idealID_generate_random_connected_graph(V, E, ec_min, ec_max, 1, boost_random_time_seed);
             instance_graph = graph_v_of_v_idealID_sort(instance_graph);
             graph_v_of_v_idealID_save("simple_iterative_tests_HBPLL.txt", instance_graph);

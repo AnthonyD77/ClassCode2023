@@ -13,7 +13,7 @@ double HB_extract_distance_v1(vector<vector<two_hop_label_v1>> &L, int source, i
         return std::numeric_limits<double>::max();
     }
 
-    double distance = std::numeric_limits<double>::max();  // if disconnected, return this large value
+    double distance = std::numeric_limits<double>::max();
     auto vector1_check_pointer = L[source].begin();
     auto vector2_check_pointer = L[terminal].begin();
     auto pointer_L_s_end = L[source].end(), pointer_L_t_end = L[terminal].end();
