@@ -16,7 +16,8 @@ Hop/HBPLL_v1_to_do.h
     --HBPLL_v1_node: HBDIJ遍历过程中使用的数据结构, 保存每个节点的相关信息
     --HB_thread_function_HBDIJ_Qhandle: 需要补全的HBDIJ函数, 对应的伪代码参考阅读材料
     --HB_v1_sort_labels_thread 和 HB_v1_sort_labels：在生成索引之后, 根据节点大小并行地对索引进行排序
-    --HBPLL_v1: HBPLL实现函数
+    --HBPLL_v1: HBPLL实现函数, 分为初始化, 索引生成, 索引整理三个部分, 需要补全的是索引生成部分.
+                在索引生成部分中, 会并行地调用 HB_thread_function_HBDIJ_Qhandle 函数, 从不同的顶点出发执行Hop-Bounded Dijkstra.
 
 Hop/HBPLL_query_to_do.h
     利用生成的索引进行最短距离, 最短路径查询的函数实现
