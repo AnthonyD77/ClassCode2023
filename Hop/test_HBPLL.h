@@ -6,7 +6,7 @@
 a cpp file (try.cpp) for running the following test code:
 ----------------------------------------
 
-#include <build_in_progress/HL/Hop/test_HBPLL.h>
+#include <Hop/test_HBPLL.h>
 
 int main() {
 	test_HBPLL();
