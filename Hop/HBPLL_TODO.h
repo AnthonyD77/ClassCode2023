@@ -62,7 +62,7 @@ void HB_thread_function_HBDIJ_Qhandle(int v_k, int N, int upper_k) {
          *
          *
          */
-         cout << "Code needs to be completed" << endl;
+         exit(1);
     }
 
 
