@@ -21,7 +21,6 @@ public:
 */
 long long int max_N_599 = 1e7;
 vector<std::shared_timed_mutex> mtx_599(max_N_599);
-auto begin_time_599 = std::chrono::high_resolution_clock::now();
 graph_v_of_v_idealID ideal_graph_599;
 vector<vector<two_hop_label_v1>> L_temp_599;
 vector<vector<vector<pair<double, int>>>> Temp_L_vk_599;

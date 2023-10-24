@@ -46,7 +46,6 @@ void HBPLL_v1(graph_v_of_v_idealID &input_graph, int num_of_threads, two_hop_cas
 
     auto begin = std::chrono::high_resolution_clock::now();
     /* information prepare */
-    begin_time_599 = std::chrono::high_resolution_clock::now();
     int N = input_graph.size();
     L_temp_599.resize(N);
 
