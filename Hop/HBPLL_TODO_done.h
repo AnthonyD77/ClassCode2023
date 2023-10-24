@@ -1,5 +1,4 @@
 #pragma once
-
 #include <boost/heap/fibonacci_heap.hpp>
 #include <Hop/HBPLL_two_hop_labels.h>
 
@@ -16,7 +15,7 @@ bool operator<(HBPLL_v1_node const &x, HBPLL_v1_node const &y) {
 }
 typedef typename boost::heap::fibonacci_heap<HBPLL_v1_node>::handle_type HBPLL_v1_node_handle;
 
-void HB_thread_function_HBDIJ_Qhandle(int v_k, int N, int upper_k, bool use_rank_pruning) {
+void HB_thread_function_HBDIJ_Qhandle(int v_k, int N, int upper_k) {
     /* get unique thread id */
     mtx_599[max_N_599 - 1].lock();
     int used_id = Qid_599.front();
@@ -60,7 +59,7 @@ void HB_thread_function_HBDIJ_Qhandle(int v_k, int N, int upper_k, bool use_rank
         Q.pop();
         int u = node.vertex;
 
-        if (v_k <= u || !use_rank_pruning) {  // rank pruning, r(v_k) > r(u)
+        if (v_k <= u) {  // rank pruning, r(v_k) > r(u)
             int u_parent = node.parent_vertex;
             int u_hop = node.hop;
             double P_u = node.priority_value;
@@ -184,103 +183,100 @@ void HB_thread_function_HBDIJ_Qhandle(int v_k, int N, int upper_k, bool use_rank
     mtx_599[max_N_599 - 1].unlock();
 }
 
-void HB_v1_sort_labels_thread(vector<vector<two_hop_label_v1>> *output_L, int v_k, double value_M) {
-    sort(L_temp_599[v_k].begin(), L_temp_599[v_k].end(), compare_two_hop_label_small_to_large);
-    if (value_M != 0) {
-        int size_vk = L_temp_599[v_k].size();
-        for (int i = 0; i < size_vk; i++) {
-            L_temp_599[v_k][i].distance += L_temp_599[v_k][i].hop * value_M;
-        }
+double HB_extract_distance_v1(vector<vector<two_hop_label_v1>> &L, int source, int terminal, int hop_cst) {
+    /*return std::numeric_limits<double>::max() is not connected*/
+    if (hop_cst < 0) {
+        return std::numeric_limits<double>::max();
     }
-    (*output_L)[v_k] = L_temp_599[v_k];
-    vector<two_hop_label_v1>().swap(L_temp_599[v_k]);  // clear new labels for RAM efficiency
+    if (source == terminal) {
+        return 0;
+    } else if (hop_cst == 0) {
+        return std::numeric_limits<double>::max();
+    }
+
+    double distance = std::numeric_limits<double>::max();
+    auto vector1_check_pointer = L[source].begin();
+    auto vector2_check_pointer = L[terminal].begin();
+    auto pointer_L_s_end = L[source].end(), pointer_L_t_end = L[terminal].end();
+    while (vector1_check_pointer != pointer_L_s_end) {
+        vector2_check_pointer = L[terminal].begin();
+        while (vector2_check_pointer != pointer_L_t_end) {
+            if (vector2_check_pointer->vertex > vector1_check_pointer->vertex)
+                break;
+            if (vector1_check_pointer->vertex == vector2_check_pointer->vertex) {
+                if (vector1_check_pointer->hop + vector2_check_pointer->hop <= hop_cst) {
+                    double dis = vector1_check_pointer->distance + vector2_check_pointer->distance;
+                    if (distance > dis) {
+                        distance = dis;
+                    }
+                }
+            }
+            vector2_check_pointer++;
+        }
+        vector1_check_pointer++;
+    }
+
+    return distance;
 }
 
-vector<vector<two_hop_label_v1>> HB_v1_sort_labels(int N, int max_N_ID, int num_of_threads, double value_M = 0) {
-    vector<vector<two_hop_label_v1>> output_L(max_N_ID);
-    vector<vector<two_hop_label_v1>> *p = &output_L;
-    ThreadPool pool(num_of_threads);
-    std::vector<std::future<int>> results;
-    for (int v_k = 0; v_k < N; v_k++) {
-        results.emplace_back(pool.enqueue([p, v_k, value_M] {
-            HB_v1_sort_labels_thread(p, v_k, value_M);
-            return 1;
-        }));
-    }
-    for (auto &&result : results)
-        result.get();
-
-    return output_L;
-}
-
-void HBPLL_v1(graph_v_of_v_idealID &input_graph, int num_of_threads, two_hop_case_info &case_info) {
-    //----------------------------------- step 1: initialization -----------------------------------
-    cout << "step 1: initialization" << endl;
-
-    auto begin = std::chrono::high_resolution_clock::now();
-    /* information prepare */
-    begin_time_599 = std::chrono::high_resolution_clock::now();
-    int N = input_graph.size();
-    L_temp_599.resize(N);
-
-    /* thread info */
-    ThreadPool pool(num_of_threads);
-    std::vector <std::future<int>> results;
-    int num_of_threads_per_push = num_of_threads * 100;
-
-    ideal_graph_599 = input_graph;
-    auto end = std::chrono::high_resolution_clock::now();
-    case_info.time_initialization = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
-
-    //----------------------------------------------- step 2: generate labels ---------------------------------------------------------------
-    cout << "step 2: generate labels" << endl;
-    begin = std::chrono::high_resolution_clock::now();
-
-    /*searching shortest paths*/
-    int upper_k = case_info.upper_k == 0 ? std::numeric_limits<int>::max() : case_info.upper_k;
-    bool use_rank_pruning = case_info.use_rank_pruning;
-
-    Temp_L_vk_599.resize(num_of_threads);
-    dist_hop_599.resize(num_of_threads);
-    for (int i = 0; i < num_of_threads; i++) {
-        Temp_L_vk_599[i].resize(N);
-        dist_hop_599[i].resize(N, {std::numeric_limits<double>::max(), 0});
-        Qid_599.push(i);
+vector<pair<int, int>> HB_extract_path_v1(vector<vector<two_hop_label_v1>> &L, int source, int terminal, int hop_cst) {
+    vector<pair<int, int>> paths;
+    if (source == terminal) {
+        return paths;
     }
 
-    int push_num = 0;
-    for (int v_k = 0; v_k < N; v_k++) {
-        if (ideal_graph_599[v_k].size() > 0) {
-            results.emplace_back(
-                    pool.enqueue([v_k, N, upper_k, use_rank_pruning] {
-                        HB_thread_function_HBDIJ_Qhandle(v_k, N, upper_k, use_rank_pruning);
-                        return 1;
-                    }));
-            push_num++;
+    vector<pair<int, int>> partial_edges(2);
+
+    int vector1_capped_v_parent = 0, vector2_capped_v_parent = 0;
+    double distance = std::numeric_limits<double>::max();
+    bool connected = false;
+    auto vector1_check_pointer = L[source].begin();
+    auto vector2_check_pointer = L[terminal].begin();
+    auto pointer_L_s_end = L[source].end(), pointer_L_t_end = L[terminal].end();
+    while (vector1_check_pointer != pointer_L_s_end) {
+        vector2_check_pointer = L[terminal].begin();
+        while (vector2_check_pointer != pointer_L_t_end) {
+            if (vector2_check_pointer->vertex > vector1_check_pointer->vertex)
+                break;
+            if (vector1_check_pointer->vertex == vector2_check_pointer->vertex) {
+                if (vector1_check_pointer->hop + vector2_check_pointer->hop <= hop_cst) {
+                    connected = true;
+                    double dis = vector1_check_pointer->distance + vector2_check_pointer->distance;
+                    if (distance > dis) {
+                        distance = dis;
+                        vector1_capped_v_parent = vector1_check_pointer->parent_vertex;
+                        vector2_capped_v_parent = vector2_check_pointer->parent_vertex;
+                    }
+                }
+            }
+            vector2_check_pointer++;
         }
-        if (push_num % num_of_threads_per_push == 0) {
-            for (auto &&result: results)
-                result.get();
-            results.clear();
+        vector1_check_pointer++;
+    }
+
+    if (connected) {
+        if (source != vector1_capped_v_parent) {
+            paths.push_back({source, vector1_capped_v_parent});
+            source = vector1_capped_v_parent;
+            hop_cst--;
+        }
+        if (terminal != vector2_capped_v_parent) {
+            paths.push_back({terminal, vector2_capped_v_parent});
+            terminal = vector2_capped_v_parent;
+            hop_cst--;
+        }
+    } else {
+        return paths;
+    }
+
+    /* find new */
+    vector<pair<int, int>> new_edges;
+    new_edges = HB_extract_path_v1(L, source, terminal, hop_cst);
+
+    if (new_edges.size() > 0) {
+        for (int i = new_edges.size() - 1; i >= 0; i--) {
+            paths.push_back(new_edges[i]);
         }
     }
-
-    for (auto &&result: results)
-        result.get();
-
-    end = std::chrono::high_resolution_clock::now();
-    case_info.time_generate_labels = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
-
-
-    //----------------------------------------------- step 3: sort labels---------------------------------------------------------------
-    cout << "step 3: sort labels" << endl;
-
-    begin = std::chrono::high_resolution_clock::now();
-
-    case_info.L = HB_v1_sort_labels(N, N, num_of_threads);
-
-    end = std::chrono::high_resolution_clock::now();
-    case_info.time_sort_labels = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
-
-    clear_global_values();
+    return paths;
 }

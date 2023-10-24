@@ -40,7 +40,6 @@ class two_hop_case_info {
 public:
     /*hop bounded*/
     int upper_k = 0;
-    bool use_rank_pruning = true;
 
     /*running time records*/
     double time_initialization = 0;
@@ -48,7 +47,6 @@ public:
     double time_sort_labels = 0;
 
     double time_query = 0;
-
 
     /*labels*/
     vector<vector<two_hop_label_v1>> L;
