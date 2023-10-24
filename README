@@ -1,7 +1,7 @@
 需要补全代码的位置:
-1. Hop/HBPLL_v1_to_do.h#HB_thread_function_HBDIJ_Qhandle 函数中 while 循环内TODO部分
-2. Hop/HBPLL_query_to_do.h#HB_extract_distance_v1 函数内TODO部分
-3. Hop/HBPLL_query_to_do.h#HB_extract_path_v1 函数内TODO部分
+1. Hop/HBPLL_TODO.h#HB_thread_function_HBDIJ_Qhandle 函数中 while 循环内TODO部分
+2. Hop/HBPLL_TODO.h#HB_extract_distance_v1 函数内TODO部分
+3. Hop/HBPLL_TODO.h#HB_extract_path_v1 函数内TODO部分
 
 除Hop文件夹外, 其余文件均为辅助实现的部分代码, 可以不重点关注
 下面对Hop文件夹内文件及内部函数做简要释义
@@ -11,18 +11,18 @@ Hop/test_HBPLL.h
     根据参数随机生成图,执行HBPLL算法并执行正确性检查
     其中含有多个控制参数便于debug测试,请详细读代码
 
-Hop/HBPLL_v1_to_do.h
+Hop/HBPLL_main.h
     HBPLL的实现文件
-    --HBPLL_v1_node: HBDIJ遍历过程中使用的数据结构, 保存每个节点的相关信息
-    --HB_thread_function_HBDIJ_Qhandle: 需要补全的HBDIJ函数, 对应的伪代码参考阅读材料
     --HB_v1_sort_labels_thread 和 HB_v1_sort_labels：在生成索引之后, 根据节点大小并行地对索引进行排序
     --HBPLL_v1: HBPLL实现函数, 分为初始化, 索引生成, 索引整理三个部分, 需要补全的是索引生成部分.
                 在索引生成部分中, 会并行地调用 HB_thread_function_HBDIJ_Qhandle 函数, 从不同的顶点出发执行Hop-Bounded Dijkstra.
 
-Hop/HBPLL_query_to_do.h
-    利用生成的索引进行最短距离, 最短路径查询的函数实现
-    --HB_extract_distance_v1: 最短距离查询实现
-    --HB_extract_path_v1: 最短路径查询实现
+Hop/HBPLL_TODO.h
+    需要补全代码的文件, 包含三个需要补全的函数, 提交代码时仅提交该文件即可
+    --HBPLL_v1_node: HBDIJ遍历过程中使用的数据结构, 保存每个节点的相关信息
+    --HB_thread_function_HBDIJ_Qhandle: 需要补全的HBDIJ函数, 对应的伪代码参考阅读材料
+    --HB_extract_distance_v1: 最短距离查询实现, 利用生成的索引进行最短距离查询
+    --HB_extract_path_v1: 最短路径查询实现, 利用生成的索引进行最短路径查询
 
 Hop/HBPLL_two_hop_labels.h
     --two_hop_label_v1: 索引结构
