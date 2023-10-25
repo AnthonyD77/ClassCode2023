@@ -49,15 +49,6 @@ void HB_shortest_distance(graph_v_of_v_idealID &instance_graph, int source, int 
     }
 }
 
-void print_vector_pair_int(std::vector <std::pair<int, int>> &input_vector) {
-
-    std::cout << "print_vector_pair_int:" << std::endl;
-    for (int i = 0; i < input_vector.size(); i++) {
-        std::cout << "item: |" << input_vector[i].first << "," << input_vector[i].second << "|" << std::endl;
-    }
-
-}
-
 /*
  * below is for checking whether the above labels are right (by randomly computing the shortest paths)
  *
@@ -65,7 +56,7 @@ void print_vector_pair_int(std::vector <std::pair<int, int>> &input_vector) {
 void HB_check_correctness(two_hop_case_info &case_info, graph_v_of_v_idealID &instance_graph, int iteration_source_times, int iteration_terminal_times) {
 
     boost::random::uniform_int_distribution<> vertex_range{static_cast<int>(0), static_cast<int>(instance_graph.size() - 1)};
-    boost::random::uniform_int_distribution<> hop_range{static_cast<int>(0), static_cast<int>(10)};
+    boost::random::uniform_int_distribution<> hop_range{static_cast<int>(0), static_cast<int>(case_info.upper_k)};
 
     for (int yy = 0; yy < iteration_source_times; yy++) {
         int source = vertex_range(boost_random_time_seed);
@@ -127,7 +118,10 @@ void HB_check_correctness(two_hop_case_info &case_info, graph_v_of_v_idealID &in
                 case_info.print_L_vk(source);
                 cout << "terminal vector:" << endl;
                 case_info.print_L_vk(terminal);
-                print_vector_pair_int(path);
+                std::cout << "print_vector_pair_int:" << std::endl;
+                for (int i = 0; i < path.size(); i++) {
+                    std::cout << "item: |" << path[i].first << "," << path[i].second << "|" << std::endl;
+                }
                 cout << "dis = " << dis << endl;
                 cout << "path_dis = " << path_dis << endl;
                 cout << "abs(dis - path_dis) > 1e-5!" << endl;
