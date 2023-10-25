@@ -1,6 +1,5 @@
 #pragma once
 #include <map>
-
 #include <shared_mutex>
 #include <tool_functions/ThreadPool.h>
 #include <graph_v_of_v_idealID/graph_v_of_v_idealID.h>
@@ -38,13 +37,12 @@ void clear_global_values() {
 class two_hop_case_info {
 public:
     /*hop bounded*/
-    int upper_k = 0;
+    int upper_k = 10;
 
     /*running time records*/
     double time_initialization = 0;
     double time_generate_labels = 0;
     double time_sort_labels = 0;
-
     double time_query = 0;
 
     /*labels*/

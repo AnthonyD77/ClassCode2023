@@ -4,27 +4,21 @@
 
 using namespace std;
 
-void HB_v1_sort_labels_thread(vector<vector<two_hop_label_v1>> *output_L, int v_k, double value_M) {
+void HB_v1_sort_labels_thread(vector<vector<two_hop_label_v1>> *output_L, int v_k) {
     sort(L_temp_599[v_k].begin(), L_temp_599[v_k].end(), compare_two_hop_label_small_to_large);
-    if (value_M != 0) {
-        int size_vk = L_temp_599[v_k].size();
-        for (int i = 0; i < size_vk; i++) {
-            L_temp_599[v_k][i].distance += L_temp_599[v_k][i].hop * value_M;
-        }
-    }
     (*output_L)[v_k] = L_temp_599[v_k];
     vector<two_hop_label_v1>().swap(L_temp_599[v_k]);  // clear new labels for RAM efficiency
 }
 
-vector<vector<two_hop_label_v1>> HB_v1_sort_labels(int N, int max_N_ID, int num_of_threads, double value_M = 0) {
+vector<vector<two_hop_label_v1>> HB_v1_sort_labels(int N, int max_N_ID, int num_of_threads) {
     vector<vector<two_hop_label_v1>> output_L(max_N_ID);
     vector<vector<two_hop_label_v1>> *p = &output_L;
 
     ThreadPool pool(num_of_threads);
     std::vector<std::future<int>> results;
     for (int v_k = 0; v_k < N; v_k++) {
-        results.emplace_back(pool.enqueue([p, v_k, value_M] {
-            HB_v1_sort_labels_thread(p, v_k, value_M);
+        results.emplace_back(pool.enqueue([p, v_k] {
+            HB_v1_sort_labels_thread(p, v_k);
             return 1;
         }));
     }

@@ -32,23 +32,24 @@ rm A
 
 void test_HBPLL() {
     /* Experimental parameters */
-    int iteration_graph_times = 1e2;                        //总遍历次数, 即生成新的随机图测试的次数
-    int thread_num = 5;                                     //HBPLL执行时的线程数
-    int V = 5;                                             //生成新图的节点数
-    int E = 7;                                             //生成新图的边数
-    bool generate_new_graph = true;                         //是否生成新图,如果不生成则会读取之前生成的图,用于debug测试
-    double ec_min = 0.1;                                    //生成新图的最小边权重
-    double ec_max = 1;                                      //生成新图的最大边权重
+    int iteration_graph_times = 1e2;                       //总遍历次数, 即生成新的随机图测试的次数
+    int thread_num = 5;                                    //HBPLL执行时的线程数
+    int V = 100;                                           //生成新图的节点数
+    int E = 150;                                           //生成新图的边数
+    bool generate_new_graph = true;                        //是否生成新图,如果不生成则会读取之前生成的图,用于debug测试
+    double ec_min = 1;                                     //生成新图的最小边权重
+    double ec_max = 10;                                    //生成新图的最大边权重
 
     /* check parameters */
-    bool check_correctness = true;                          //是否检查生成索引的正确性
-    int iteration_source_times = 10;                        //检查正确性时起点随机生成的次数
-    int iteration_terminal_times = 10;                      //检查正确性时终点随机生成的次数
-    bool print_time_details = true;                         //是否打印HBPLL算法每个步骤的用时
-    bool print_L = true;                                   //是否打印最终生成的索引
+    bool check_correctness = true;                         //是否检查生成索引的正确性
+    int iteration_source_times = 100;                      //检查正确性时起点随机生成的次数
+    int iteration_terminal_times = 100;                    //检查正确性时终点随机生成的次数
+    bool print_time_details = 0;                           //是否打印HBPLL算法每个步骤的用时
+    bool print_L = 0;                                      //是否打印最终生成的索引
 
     /* hop bounded info */
     two_hop_case_info mm;
+    mm.upper_k = 10;    // hop上限值
 
     /* result info */
     double avg_index_time = 0;
@@ -73,28 +74,19 @@ void test_HBPLL() {
         }
 
         auto begin = std::chrono::high_resolution_clock::now();
-        try {
-            HBPLL_v1(instance_graph, thread_num, mm);
-            if (true) {
-                total_time_initialization += mm.time_initialization;
-                total_time_generate_labels += mm.time_generate_labels;
-                total_time_sort_labels += mm.time_sort_labels;
-            }
-        } catch (string s) {
-            cout << s << endl;
-            clear_global_values();
-            continue;
-        }
+
+        HBPLL_v1(instance_graph, thread_num, mm);
+        total_time_initialization += mm.time_initialization;
+        total_time_generate_labels += mm.time_generate_labels;
+        total_time_sort_labels += mm.time_sort_labels;
 
         auto end = std::chrono::high_resolution_clock::now();
-
         double runningtime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1e9;
         avg_index_time = avg_index_time + runningtime / iteration_graph_times;
 
         if (print_L) {
             mm.print_L();
         }
-
         if (check_correctness) {
             HB_check_correctness(mm, instance_graph, iteration_source_times, iteration_terminal_times);
         }
