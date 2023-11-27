@@ -61,6 +61,10 @@ public:
     /*clear labels*/
     void clear_labels() {
         vector<vector<two_hop_label_v1>>().swap(L);
+        time_initialization = 0;
+        time_generate_labels = 0;
+        time_sort_labels = 0;
+        time_query = 0;
     }
 
     /*printing*/
